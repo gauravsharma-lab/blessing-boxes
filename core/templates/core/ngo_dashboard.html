@@ -1,0 +1,106 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <!-- 🔷 Top Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 p-3 shadow-sm rounded bg-white">
+
+        <h3 class="fw-bold text-primary mb-0">Available Donations</h3>
+
+        <div class="d-flex align-items-center">
+
+            <div style="
+                width:45px;
+                height:45px;
+                border-radius:50%;
+                background:#0d6efd;
+                color:white;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-weight:bold;
+                font-size:18px;
+                margin-right:10px;
+            ">
+                {{ request.user.username|first|upper }}
+            </div>
+
+            <div>
+                <small class="text-muted">Logged in as</small><br>
+                <strong>{{ request.user.username }}</strong><br>
+                <small class="text-primary">
+                    {{ request.user.profile.role|title }}
+                </small>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 🔷 Donation Cards -->
+    <div class="row">
+
+        {% for donation in donations %}
+
+        <div id="map" style="height: 400px;"></div>
+<script>
+    var lat = parseFloat("{{ donation.latitude|default:'26.85' }}");
+    var lng = parseFloat("{{ donation.longitude|default:'80.95' }}");
+
+    var map = L.map('map_{{ donation.id }}').setView([lat, lng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup("Donation Location")
+        .openPopup();
+</script>
+        <div class="col-md-4">
+
+            <div class="card shadow-sm mb-4" style="border-radius: 15px;">
+
+                <div class="card-body">
+
+                    <h5 class="card-title text-primary fw-bold">
+                        {{ donation.event.name }}
+                    </h5>
+
+                    <p><strong>Location:</strong> {{ donation.event.location }}</p>
+                    <p><strong>Date:</strong> {{ donation.event.date }}</p>
+
+                    <p class="text-muted small">
+                        {{ donation.description }}
+                    </p>
+
+                    <p><strong>Quantity:</strong> {{ donation.quantity }}</p>
+                    <p><strong>Valid Till:</strong> {{ donation.available_until }}</p>
+                    <p><strong>Contact:</strong> {{ donation.phone_number }}</p>
+
+                    <!-- Accept Button -->
+                   <form method="post" action="{% url 'accept_delivery' donation.id %}">
+                     {% csrf_token %}
+                   <button type="submit" class="btn btn-primary w-100">
+                         Accept Donation
+                          </button>
+                           </form>
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+        <div class="text-center mt-5">
+            <h5 class="text-muted">No donations available 😔</h5>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

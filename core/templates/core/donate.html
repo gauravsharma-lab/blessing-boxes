@@ -1,0 +1,143 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-5 mb-5">
+
+    <div class="card shadow-lg" style="max-width:700px;margin:auto;border-radius:15px;">
+
+        <div class="bg-success text-white p-3 text-center">
+            <h3>🍱 Donate Food</h3>
+        </div>
+
+        <div class="p-4">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- 🔍 Search Box -->
+                <input id="searchBox" class="form-control mb-3" type="text"
+                       placeholder="Search location (e.g. KNIT Sultanpur)">
+
+                <!-- 🗺️ Google Map -->
+                <div id="map" style="height:400px;border-radius:10px;"></div>
+
+                <!-- Hidden fields -->
+                <input type="hidden" name="latitude" id="lat">
+                <input type="hidden" name="longitude" id="lng">
+
+                <!-- Auto address -->
+                <div class="mt-3">
+                    <label>Location</label>
+                    <input type="text" id="location" name="location"
+                           class="form-control" readonly required>
+                </div>
+
+                <h5 class="mt-4">Event Details</h5>
+
+                <input type="text" name="event_name"
+                       class="form-control mb-2"
+                       placeholder="Event Name" required>
+
+                <input type="tel" name="phone_number"
+                       class="form-control mb-3"
+                       placeholder="Mobile Number" required>
+
+                <h5>Food Details</h5>
+
+                {{ form.description }}
+                {{ form.quantity }}
+                {{ form.available_until }}
+
+                <button type="submit" class="btn btn-success w-100 mt-3">
+                    Submit Donation
+                </button>
+
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ✅ Google Maps Script -->
+<script>
+function initMap() {
+
+    const india = { lat: 22.9734, lng: 78.6569 };
+
+    const map = new google.maps.Map(document.getElementById("map"), {
+        center: india,
+        zoom: 5,
+        restriction: {
+            latLngBounds: {
+                north: 37.5,
+                south: 6.5,
+                west: 68.0,
+                east: 97.5,
+            },
+            strictBounds: false
+        }
+    });
+
+    const input = document.getElementById("searchBox");
+    const searchBox = new google.maps.places.SearchBox(input);
+
+    let marker;
+
+    // 🔍 Search
+    searchBox.addListener("places_changed", function () {
+        const places = searchBox.getPlaces();
+
+        if (!places || places.length === 0) return;
+
+        const place = places[0];
+
+        if (!place.geometry) return;
+
+        const location = place.geometry.location;
+
+        if (marker) marker.setMap(null);
+
+        marker = new google.maps.Marker({
+            map: map,
+            position: location
+        });
+
+        map.setCenter(location);
+        map.setZoom(17);
+
+        document.getElementById("lat").value = location.lat();
+        document.getElementById("lng").value = location.lng();
+        document.getElementById("location").value = place.formatted_address;
+    });
+
+    // 📍 Click on map
+    map.addListener("click", function (e) {
+
+        if (marker) marker.setMap(null);
+
+        marker = new google.maps.Marker({
+            position: e.latLng,
+            map: map
+        });
+
+        const geocoder = new google.maps.Geocoder();
+
+        geocoder.geocode({ location: e.latLng }, function (results, status) {
+            if (status === "OK" && results[0]) {
+                document.getElementById("location").value =
+                    results[0].formatted_address;
+            }
+        });
+
+        document.getElementById("lat").value = e.latLng.lat();
+        document.getElementById("lng").value = e.latLng.lng();
+    });
+}
+
+//  Load map
+window.onload = initMap;
+</script>
+
+{% endblock %}

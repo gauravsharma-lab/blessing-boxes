@@ -1,0 +1,154 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | BlessingBoxes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #198754, #0d6efd);
+            min-height: 100vh;
+        }
+
+        .login-card {
+            border-radius: 15px;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        .login-image {
+          .signup-image {
+          background: url("{% static 'core/food.png' %}") center/cover no-repeat;
+            }
+            min-height: 100%;
+        }
+
+        .form-section {
+            padding: 40px;
+        }
+
+        .btn-success:hover {
+            transform: scale(1.03);
+            transition: 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        input.form-control {
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .logo {
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow-lg login-card col-lg-8">
+        <div class="row g-0">
+
+            <!-- Left Image -->
+            <div class="col-md-6 d-none d-md-block login-image"></div>
+
+            <!-- Right Form -->
+            <div class="col-md-6 bg-white">
+                <div class="form-section">
+
+                    <!-- Logo & Title -->
+                    <div class="text-center mb-4">
+                        <img src="{% static 'core/logo.png' %}" alt="Logo" width="80" class="mb-3 logo">
+                        <h3 class="fw-bold">Welcome Back</h3>
+                        <p class="text-muted">Login to continue</p>
+                    </div>
+
+                    <!-- Form -->
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="text-danger small">
+                                    {{ form.username.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            {{ form.password }}
+                            {% if form.password.errors %}
+                                <div class="text-danger small">
+                                    {{ form.password.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Show Password -->
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" onclick="togglePassword()">
+                            <label class="form-check-label">Show Password</label>
+                        </div>
+
+                        <!-- Non-field errors -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                Login
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Footer -->
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            Don't have an account?
+                           <a href="{% url 'select_role' 'donor' %}" class="fw-semibold text-decoration-none"> Sign Up</a>
+                        </small>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+<script>
+function togglePassword() {
+    const passwordField = document.querySelector('input[type="password"]');
+    if (passwordField) {
+        passwordField.type = passwordField.type === "password" ? "text" : "password";
+    }
+}
+</script>
+
+</body>
+</html>

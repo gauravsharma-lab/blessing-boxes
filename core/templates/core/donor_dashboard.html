@@ -1,0 +1,119 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <!-- 🔷 Top Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 p-3 shadow-sm rounded bg-white">
+
+        <!-- Title -->
+        <h3 class="fw-bold text-success mb-0">My Donations</h3>
+
+        <!-- User Info -->
+        <div class="d-flex align-items-center">
+
+            <!-- Initial Circle -->
+            <div style="
+                width:45px;
+                height:45px;
+                border-radius:50%;
+                background:#198754;
+                color:white;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-weight:bold;
+                font-size:18px;
+                margin-right:10px;
+            ">
+                {{ request.user.username|first|upper }}
+            </div>
+
+            <!-- Username + Role -->
+            <div>
+                <small class="text-muted">Logged in as</small><br>
+                <strong>{{ request.user.username }}</strong><br>
+
+                <small class="text-success">
+                    {{ request.user.profile.role|title }}
+                </small>
+            </div>
+
+        </div> <!-- ✅ CLOSE user info -->
+
+    </div> <!-- ✅ CLOSE top bar -->
+
+    <!-- 🔷 Add Donation Button -->
+    <div class="mb-4 text-end">
+        <a href="{% url 'donate_food' %}" class="btn btn-success shadow-sm">
+            + Add Donation
+        </a>
+    </div>
+
+    <!-- 🔷 Donation Cards -->
+    <div class="row">
+
+        {% for donation in donations %}
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+
+                <div class="card-body">
+
+                    <!-- Event Name -->
+                    <h5 class="card-title text-success fw-bold">
+                        {{ donation.event.name }}
+                    </h5>
+                    <p><strong>Location:</strong> {{ donation.event.location }}</p>
+                    <p><strong>Date:</strong> {{ donation.event.date }}</p>
+
+                    <!-- Description -->
+                    <p class="text-muted small">
+                        {{ donation.description }}
+                    </p>
+
+                    <!-- Info -->
+                    <p class="mb-1"><strong>Quantity:</strong> {{ donation.quantity }}</p>
+                    <p class="mb-2"><strong>Valid Till:</strong> {{ donation.available_until }}</p>
+                    <p><strong>Contact:</strong> {{ donation.phone_number }}</p>
+
+                    <!-- Status Badge -->
+                    <span class="badge bg-warning text-dark px-3 py-2">
+                        {{ donation.status|default:"Pending" }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+        {% empty %}
+        <div class="text-center mt-5">
+            <h5 class="text-muted">No donations yet 😔</h5>
+            <p>Start by adding your first donation</p>
+        </div>
+
+
+        <a href="{% url 'edit_donation' donation.id %}" 
+   class="btn btn-outline-primary btn-sm mt-2">
+   Edit
+</a>
+
+<a href="{% url 'delete_donation' donation.id %}" 
+   class="btn btn-outline-danger btn-sm mt-2">
+   Delete
+</a>
+
+<div class="d-flex justify-content-between mt-2">
+    <a href="{% url 'edit_donation' donation.id %}" class="btn btn-outline-primary btn-sm">Edit</a>
+    
+    <a href="{% url 'delete_donation' donation.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+</div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

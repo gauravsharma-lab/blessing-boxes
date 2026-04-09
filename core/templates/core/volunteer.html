@@ -1,0 +1,39 @@
+<div class="container mt-5">
+    <h2 class="mb-4">Volunteer Registration</h2>
+
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            Please correct the errors below.
+        </div>
+    {% endif %}
+
+    <form method="post" class="border p-4 rounded bg-light shadow-sm mb-5">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.donation.label_tag }}
+            {{ form.donation }}
+            {{ form.donation.errors }}
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+
+    <h3>Available Donations</h3>
+    <ul class="list-group">
+        {% for donation in donations %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Event:</strong> {{ donation.event.name }} <br>
+                    <strong>Description:</strong> {{ donation.description }} <br>
+                    <strong>Location:</strong> {{ donation.event.location }}
+                </div>
+
+                <form method="post" action="{% url 'accept_delivery' donation.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">Accept Delivery</button>
+                </form>
+            </li>
+        {% empty %}
+            <li class="list-group-item">No donations available.</li>
+        {% endfor %}
+    </ul>
+</div>

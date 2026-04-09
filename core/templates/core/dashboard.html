@@ -1,0 +1,23 @@
+<!-- <div class="container mt-5">
+    <p class="text-muted">
+   Role: <strong>{{ request.user.profile.role|default:"Donor"|title }}</strong>
+</p>
+
+    <h2>Your Donations</h2>
+
+    <ul class="list-group">
+        {% for donation in donations %}
+            <li class="list-group-item">
+                <strong>{{ donation.description }}</strong> ({{ donation.quantity }})
+                <br> Available until: {{ donation.available_until }}
+                <br> Status: {{ donation.status }}
+            </li>
+        {% empty %}
+            <li class="list-group-item">No donations yet.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'donate_food' %}" class="btn btn-success mt-3">
+        Add New Donation
+    </a>
+</div> -->

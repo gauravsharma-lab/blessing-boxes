@@ -1,0 +1,98 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+<style>
+    body {
+        background: #f4f8fb;
+    }
+
+    .privacy-card {
+        max-width: 900px;
+        margin: auto;
+        border-radius: 15px;
+        overflow: hidden;
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, #198754, #0d6efd);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .content-section {
+        padding: 30px;
+        line-height: 1.7;
+    }
+
+    h5 {
+        color: #198754;
+        margin-top: 20px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+
+    <div class="card shadow-lg privacy-card">
+
+        <!-- Header -->
+        <div class="card-header-custom">
+            <h3>🔒 Privacy Policy</h3>
+            <p class="mb-0">Your data is safe with us</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content-section">
+
+            <p>
+                At <strong>BlessingBoxes</strong>, we value your privacy and are committed
+                to protecting your personal information.
+            </p>
+
+            <h5>1. Information We Collect</h5>
+            <p>
+                We may collect your name, email, phone number, and donation details
+                when you use our platform.
+            </p>
+
+            <h5>2. How We Use Information</h5>
+            <p>
+                Your data is used to manage food donations, connect donors with NGOs,
+                and improve our services.
+            </p>
+
+            <h5>3. Data Protection</h5>
+            <p>
+                We implement security measures to protect your information from unauthorized access.
+            </p>
+
+            <h5>4. Sharing of Information</h5>
+            <p>
+                We do not sell your personal data. Information is only shared with NGOs
+                and volunteers for delivery purposes.
+            </p>
+
+            <h5>5. Cookies</h5>
+            <p>
+                Our website may use cookies to improve user experience and performance.
+            </p>
+
+            <h5>6. Contact Us</h5>
+            <p>
+                If you have any questions about this Privacy Policy, please contact us.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
