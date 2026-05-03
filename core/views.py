@@ -179,6 +179,8 @@ def donate_food(request):
 
             #  phone number 
             donation.phone_number = request.POST.get('phone_number')
+            donation.latitude = request.POST.get('latitude')
+            donation.longitude = request.POST.get('longitude')
 
             donation.save()
 
@@ -330,6 +332,6 @@ def add_donation(request):
             available_until=request.POST.get("available_until"),
         )
 
-        return redirect("ngo_dashboard")
+        return redirect("dashboard")
 
     return render(request, "core/add_donation.html")

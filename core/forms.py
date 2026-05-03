@@ -89,19 +89,4 @@ class SignupForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
-
-        widgets = {
-    
-    'description': forms.Textarea(attrs={'class': 'form-control'}),
-    'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
-    'available_until': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-}
-
-def clean_available_until(self):
-    value = self.cleaned_data.get('available_until')
-
-    if value and value < timezone.now():
-        raise forms.ValidationError("Valid till date cannot be in the past!")
-
-    return value
+        fields = ['username', 'email', 'password1', 'password2']
