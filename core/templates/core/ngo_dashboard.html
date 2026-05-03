@@ -2,7 +2,53 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
+    <!-- 🏢 NGO HEADER -->
+    <div class="bg-white p-4 shadow-sm rounded-4 mb-5 border-start border-primary border-5 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">🏢 NGO Dashboard</h2>
+            {% if ngo.location == "Not Provided" %}
+                <span class="text-danger small fw-bold anim-pulse ms-2">
+                    <i class="bi bi-exclamation-circle-fill"></i> Address required for volunteers
+                </span>
+            {% endif %}
+        </div>
+        <div class="text-end d-flex align-items-center gap-3">
+            <!-- PROFILE BUTTON -->
+            <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#profileModal">
+                <i class="bi bi-person-circle"></i> Profile Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- 👤 PROFILE MODAL -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold mb-0">Update NGO Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">Set your organization name and delivery address for volunteers.</p>
+                    <form method="post" action="{% url 'update_ngo_profile' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Organization Name</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Delivery Address</label>
+                            {{ form.location }}
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold shadow-sm">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 🔵 PENDING DONATIONS -->
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -45,65 +91,83 @@
                         {{ donation.description|truncatewords:12 }}
                     </p>
 
-                    <form method="post" action="{% url 'accept_delivery' donation.id %}">
-                        {% csrf_token %}
-                        <button class="btn btn-primary w-100">Claim Food</button>
-                    </form>
+                    <div class="d-grid gap-2">
+                        <form method="post" action="{% url 'accept_delivery' donation.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success w-100 rounded-pill fw-bold">Claim Food</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
         {% empty %}
-        <p>No pending donations.</p>
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">No pending donations at the moment.</p>
+        </div>
         {% endfor %}
     </div>
 
+    <!-- ✅ YOUR CLAIMED DONATIONS -->
+    <div class="mt-5 mb-5">
+        <h3 class="fw-bold text-success mb-3">✔ Your Claimed Donations</h3>
+        <div class="row">
+            {% for donation in approved_donations %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card shadow-sm h-100 border-0" style="border-radius: 20px; overflow: hidden;">
 
-    <!-- 🟢 APPROVED / CLAIMED -->
-    <div class="d-flex justify-content-between align-items-center mt-5 mb-3">
-        <h3 class="fw-bold text-success">✅ Your Claimed Donations</h3>
-        <span class="badge bg-success rounded-pill px-3">
-            {{ approved_donations|length }} Claimed
-        </span>
-    </div>
-
-    <div class="row">
-        {% for donation in approved_donations %}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card shadow-sm h-100 border-0" style="border-radius: 20px; overflow: hidden;">
-
-                <!-- IMAGE -->
-                <div style="height: 160px;">
-                    {% if donation.image %}
-                        <img src="{{ donation.image.url }}" class="w-100 h-100" style="object-fit: cover;">
-                    {% else %}
-                        <img src="{% static 'core/donation_banner.png' %}" class="w-100 h-100" style="object-fit: cover;">
-                    {% endif %}
-                </div>
-
-                <!-- BODY -->
-                <div class="card-body">
-                    <h5 class="fw-bold text-success">{{ donation.event.name }}</h5>
-                    <p class="small text-muted">{{ donation.event.location }}</p>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <small><b>Qty:</b> {{ donation.quantity }}</small>
-                        <small><b>📞</b> {{ donation.phone_number }}</small>
+                    <!-- IMAGE -->
+                    <div style="height: 160px;">
+                        {% if donation.image %}
+                            <img src="{{ donation.image.url }}" class="w-100 h-100" style="object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'core/donation_banner.png' %}" class="w-100 h-100" style="object-fit: cover;">
+                        {% endif %}
                     </div>
 
-                    <span class="badge bg-success w-100 py-2">
-                        ✔ Claimed by You
-                    </span>
+                    <!-- BODY -->
+                    <div class="card-body">
+                        <h5 class="fw-bold text-success">{{ donation.event.name }}</h5>
+                        <p class="small text-muted">{{ donation.event.location }}</p>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <small><b>Qty:</b> {{ donation.quantity }}</small>
+                            <small><b>📞</b> {{ donation.phone_number }}</small>
+                        </div>
+
+                        <div class="mt-3 d-flex justify-content-between">
+                            {% if donation.donor == request.user %}
+                                <a href="{% url 'edit_donation' donation.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <a href="{% url 'delete_donation' donation.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            {% else %}
+                                <span class="badge bg-success w-100 py-2">
+                                    ✔ Claimed by You
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% empty %}
+            <p>No claimed donations yet.</p>
+            {% endfor %}
         </div>
-        {% empty %}
-        <p>No claimed donations yet.</p>
-        {% endfor %}
     </div>
-
 </div>
 
-<!-- ⏳ COUNTDOWN -->
+<style>
+    .anim-pulse { animation: pulse-red 2s infinite; }
+    @keyframes pulse-red {
+        0% { opacity: 1; }
+        50% { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
+</style>
+
+<!-- ⏳ LIVE COUNTDOWN -->
 <script>
 setInterval(() => {
     document.querySelectorAll('.live-countdown').forEach(el => {
@@ -113,14 +177,23 @@ setInterval(() => {
 
         if (diff <= 0) {
             el.innerHTML = "Expired";
+            const card = el.closest('.card');
+            if (card) {
+                const button = card.querySelector('button[type="submit"]');
+                if (button && !button.disabled) {
+                    button.disabled = true;
+                    button.innerHTML = "Expired";
+                    button.classList.replace('btn-success', 'btn-secondary');
+                }
+            }
             return;
         }
 
         const h = Math.floor(diff / (1000 * 60 * 60));
         const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        el.innerHTML = `${h}h ${m}m`;
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+        el.innerHTML = `${h}h ${m}m ${s}s`;
     });
 }, 1000);
 </script>
-
 {% endblock %}

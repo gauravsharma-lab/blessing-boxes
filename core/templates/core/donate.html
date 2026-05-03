@@ -72,7 +72,10 @@
 
                 <label>Contact Number</label>
                 <input type="tel" name="phone_number" class="form-control mb-2"
-                       placeholder="Enter 10-digit mobile number" required>
+                       placeholder="Enter 10-digit mobile number" 
+                       maxlength="10"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                       required>
 
                 <!-- FOOD DETAILS -->
                 <div class="section-title">Food Details</div>

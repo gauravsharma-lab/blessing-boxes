@@ -1,41 +1,47 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-
 <div class="container mt-5">
-    <div class="card shadow-lg p-4" style="max-width:600px; margin:auto; border-radius:15px;">
-
-        <h3 class="text-success mb-4 text-center">✏️ Edit Donation</h3>
+    <div class="card border-0 shadow-lg p-4" style="max-width:600px; margin:auto; border-radius:20px;">
+        <div class="text-center mb-4">
+            <div class="bg-success-subtle d-inline-block rounded-circle p-3 mb-3">
+                <i class="bi bi-pencil-square text-success fs-2"></i>
+            </div>
+            <h3 class="fw-bold text-dark">Edit Donation</h3>
+            <p class="text-muted">Update your food donation details below.</p>
+        </div>
 
         <form method="post">
             {% csrf_token %}
 
             <div class="mb-3">
-                <label>Description</label>
+                <label class="form-label fw-bold small">Food Description</label>
                 {{ form.description }}
+                <div class="form-text">Update the items or details of the food.</div>
             </div>
 
-            <div class="mb-3">
-                <label>Quantity</label>
-                {{ form.quantity }}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold small">Quantity</label>
+                    {{ form.quantity }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold small">Contact Number</label>
+                    {{ form.phone_number }}
+                </div>
             </div>
 
-            <div class="mb-3">
-                <label>Mobile Number</label>
-                {{ form.phone_number }}
-            </div>
-
-            <div class="mb-3">
-                <label>Available Until</label>
+            <div class="mb-4">
+                <label class="form-label fw-bold small">Available Until</label>
                 {{ form.available_until }}
+                <div class="form-text text-danger">Ensure the food is still safe to eat until this time.</div>
             </div>
 
-            <div class="d-grid">
-                <button class="btn btn-success">Update Donation</button>
+            <div class="d-grid gap-2">
+                <button class="btn btn-success rounded-pill py-2 fw-bold shadow-sm">Save Updates</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-light rounded-pill py-2 text-muted">Cancel Changes</a>
             </div>
         </form>
-
     </div>
 </div>
-
 {% endblock %}

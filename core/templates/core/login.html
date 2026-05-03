@@ -142,6 +142,14 @@
 
 <!-- JS -->
 <script>
+{% if messages %}
+    {% for message in messages %}
+        {% if "account has been created" in message.message|lower %}
+            alert("{{ message|escapejs }}");
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
 function togglePassword() {
     const passwordField = document.querySelector('input[type="password"]');
     if (passwordField) {

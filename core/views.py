@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout
 from django.contrib import messages
 
 from .models import FoodDonation, Profile, NGO
-from .forms import FoodDonationForm, SignupForm, LoginForm
+from .forms import FoodDonationForm, SignupForm, LoginForm, NGOForm
 from .models import Event 
 from django.utils import timezone
 from django.core.mail import send_mail
@@ -25,10 +25,10 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            messages.success(request, f"Welcome {user.username}!")
             return redirect('dashboard')
         else:
-            messages.error(request, "Invalid username or password")
+            # We keep the error for invalid login but it will be shown via form errors usually
+            pass
 
     else:
         form = LoginForm()
@@ -40,7 +40,6 @@ def login_view(request):
 @login_required(login_url='login')
 def logout_view(request):
     logout(request)
-    messages.success(request, "Logged out successfully!")
     return redirect('homepage')
 
 
@@ -67,13 +66,6 @@ def signup(request):
         form = SignupForm(request.POST)
 
         if form.is_valid():
-
-            #  CHECK EMAIL HERE (CORRECT PLACE)
-            email = form.cleaned_data.get('email')
-            if User.objects.filter(email=email).exists():
-                messages.error(request, "Account already exists with this email.")
-                return redirect('login')
-
             #  CREATE USER
             user = form.save()
 
@@ -82,13 +74,13 @@ def signup(request):
             profile.role = role
             profile.save()
 
-            # LOGIN USER
-            login(request, user)
+            # SUCCESS MESSAGE
+            messages.success(request, f"Your {role} account has been created successfully! Please login to continue.")
 
             # CLEAR SESSION ROLE
             request.session.pop('selected_role', None)
 
-            return redirect('dashboard')
+            return redirect('login')
 
         else:
             messages.error(request, "Please correct the errors below.")
@@ -118,8 +110,25 @@ def dashboard(request):
 
     # 🔵 VOLUNTEER
     elif role == 'volunteer':
-        donations = FoodDonation.objects.all()
-        return render(request, 'core/volunteer.html', {'donations': donations})
+        available_tasks = FoodDonation.objects.filter(
+            status='Approved',
+            assigned_volunteer__isnull=True,
+            available_until__gt=timezone.now()
+        )
+        my_deliveries = FoodDonation.objects.filter(
+            assigned_volunteer=request.user
+        ).exclude(status='Delivered')
+        
+        completed_deliveries = FoodDonation.objects.filter(
+            assigned_volunteer=request.user,
+            status='Delivered'
+        )
+
+        return render(request, 'core/volunteer.html', {
+            'available_tasks': available_tasks,
+            'my_deliveries': my_deliveries,
+            'completed_deliveries': completed_deliveries
+        })
 
     # 🟡 NGO
     elif role == 'ngo':
@@ -131,16 +140,23 @@ def dashboard(request):
             }
         )
 
-        pending_donations = FoodDonation.objects.filter(status='Pending')
+        pending_donations = FoodDonation.objects.filter(
+            status='Pending', 
+            available_until__gt=timezone.now()
+        )
 
         approved_donations = FoodDonation.objects.filter(
             status='Approved',
             assigned_ngo=ngo
         )
 
+        form = NGOForm(instance=ngo)
+
         return render(request, 'core/ngo_dashboard.html', {
             'pending_donations': pending_donations,
-            'approved_donations': approved_donations
+            'approved_donations': approved_donations,
+            'ngo': ngo,
+            'form': form
         })
 
     # 🔴 MANAGER
@@ -184,6 +200,28 @@ def donate_food(request):
 
             donation.save()
 
+            # 📧 NOTIFY ALL NGOs
+            ngo_emails = User.objects.filter(profile__role='ngo').values_list('email', flat=True)
+            if ngo_emails:
+                try:
+                    send_mail(
+                        subject="[Blessing Boxes] New Food Donation Available Near You",
+                        message=(
+                            f"Greetings,\n\n"
+                            f"A new food donation for '{event_name}' has just been posted at {location}.\n"
+                            f"Quantity: {request.POST.get('quantity')}\n\n"
+                            f"Please log in to your NGO dashboard to review and claim this donation:\n"
+                            f"http://127.0.0.1:8000/dashboard/\n\n"
+                            f"Thank you for your service,\n"
+                            f"The Blessing Boxes Team"
+                        ),
+                        from_email=f"Blessing Boxes <{settings.EMAIL_HOST_USER}>",
+                        recipient_list=list(ngo_emails),
+                        fail_silently=False,
+                    )
+                except:
+                    pass
+
             messages.success(request, "Donation submitted successfully!")
             return redirect('dashboard')
 
@@ -208,17 +246,71 @@ def accept_delivery(request, donation_id):
         messages.error(request, "You are not registered as NGO!")
         return redirect('dashboard')
 
+    if donation.available_until < timezone.now():
+        messages.error(request, "This food donation has expired and cannot be claimed.")
+        return redirect('dashboard')
+
     donation.assigned_ngo = ngo
     donation.status = 'Approved'
-
-    # Assign volunteer
-    volunteer = User.objects.filter(profile__role='volunteer').first()
-    if volunteer:
-        donation.assigned_volunteer = volunteer
-
     donation.save()
 
+    # 📧 NOTIFY ALL VOLUNTEERS
+    volunteer_emails = User.objects.filter(profile__role='volunteer').values_list('email', flat=True)
+    if volunteer_emails:
+        try:
+            send_mail(
+                subject="[Blessing Boxes] New Pickup Task Available",
+                message=(
+                    f"Greetings,\n\n"
+                    f"A food donation for '{donation.event.name}' has been approved by {ngo.name}.\n"
+                    f"It is now ready for pickup at:\n"
+                    f"📍 {donation.event.location}\n\n"
+                    f"Please log in to your Volunteer dashboard to accept this task:\n"
+                    f"http://127.0.0.1:8000/dashboard/\n\n"
+                    f"Thank you for helping us reduce food waste!\n"
+                    f"The Blessing Boxes Team"
+                ),
+                from_email=f"Blessing Boxes <{settings.EMAIL_HOST_USER}>",
+                recipient_list=list(volunteer_emails),
+                fail_silently=False,
+            )
+        except:
+            pass
+
     messages.success(request, "Food claimed successfully!")
+    return redirect('dashboard')
+
+
+# 🚲 Volunteer: Accept Pickup Task
+@login_required
+def volunteer_accept_task(request, donation_id):
+    donation = get_object_or_404(FoodDonation, id=donation_id)
+    
+    # Ensure it's approved and not already assigned
+    if donation.status != 'Approved' or donation.assigned_volunteer:
+        messages.error(request, "Task is no longer available.")
+        return redirect('dashboard')
+
+    donation.assigned_volunteer = request.user
+    donation.save()
+
+    messages.success(request, "Task accepted! It is now in your deliveries.")
+    return redirect('dashboard')
+
+
+# 🏁 Volunteer: Complete Delivery
+@login_required
+def volunteer_complete_delivery(request, donation_id):
+    donation = get_object_or_404(FoodDonation, id=donation_id)
+    
+    if donation.assigned_volunteer != request.user:
+        messages.error(request, "You are not assigned to this task.")
+        return redirect('dashboard')
+
+    donation.status = 'Delivered'
+    donation.save()
+
+    messages.success(request, "Delivery marked as completed. Thank you for your help!")
     return redirect('dashboard')
 
 
@@ -335,3 +427,21 @@ def add_donation(request):
         return redirect("dashboard")
 
     return render(request, "core/add_donation.html")
+
+@login_required(login_url='login')
+def my_donations(request):
+    donations = FoodDonation.objects.filter(donor=request.user)
+    return render(request, 'core/my_donations.html', {'donations': donations})
+
+
+# 🏢 NGO: Update Profile
+@login_required
+def update_ngo_profile(request):
+    ngo = get_object_or_404(NGO, user=request.user)
+    if request.method == 'POST':
+        form = NGOForm(request.POST, instance=ngo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "NGO profile updated successfully!")
+            return redirect('dashboard')
+    return redirect('dashboard')

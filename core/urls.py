@@ -22,4 +22,10 @@ urlpatterns = [
     path('privacy/', views.privacy, name='privacy'),
     path('edit-donation/<int:id>/', views.edit_donation, name='edit_donation'),
     path('delete-donation/<int:id>/', views.delete_donation, name='delete_donation'),
+    path('my-donations/', views.my_donations, name='my_donations'),
+    path('update-ngo/', views.update_ngo_profile, name='update_ngo_profile'),
+    
+    # Volunteer URLs
+    path('volunteer/accept/<int:donation_id>/', views.volunteer_accept_task, name='volunteer_accept_task'),
+    path('volunteer/complete/<int:donation_id>/', views.volunteer_complete_delivery, name='volunteer_complete_delivery'),
 ]
