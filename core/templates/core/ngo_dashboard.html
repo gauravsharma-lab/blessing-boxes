@@ -1,106 +1,126 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block content %}
-
 <div class="container mt-5">
 
-    <!-- 🔷 Top Bar -->
-    <div class="d-flex justify-content-between align-items-center mb-4 p-3 shadow-sm rounded bg-white">
-
-        <h3 class="fw-bold text-primary mb-0">Available Donations</h3>
-
-        <div class="d-flex align-items-center">
-
-            <div style="
-                width:45px;
-                height:45px;
-                border-radius:50%;
-                background:#0d6efd;
-                color:white;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                font-weight:bold;
-                font-size:18px;
-                margin-right:10px;
-            ">
-                {{ request.user.username|first|upper }}
-            </div>
-
-            <div>
-                <small class="text-muted">Logged in as</small><br>
-                <strong>{{ request.user.username }}</strong><br>
-                <small class="text-primary">
-                    {{ request.user.profile.role|title }}
-                </small>
-            </div>
-
-        </div>
+    <!-- 🔵 PENDING DONATIONS -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold text-dark">📦 Pending Donations</h3>
+        <span class="badge bg-warning text-dark rounded-pill px-3">
+            {{ pending_donations|length }} Available
+        </span>
     </div>
 
-    <!-- 🔷 Donation Cards -->
     <div class="row">
+        {% for donation in pending_donations %}
+        <div class="col-lg-4 col-md-6 mb-4" id="donation-card-{{ donation.id }}">
+            <div class="card shadow-sm h-100 border-0" style="border-radius: 20px; overflow: hidden;">
 
-        {% for donation in donations %}
+                <!-- IMAGE -->
+                <div style="height: 160px; position: relative;">
+                    {% if donation.image %}
+                        <img src="{{ donation.image.url }}" class="w-100 h-100" style="object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'core/donation_banner.png' %}" class="w-100 h-100" style="object-fit: cover;">
+                    {% endif %}
 
-        <div id="map" style="height: 400px;"></div>
-<script>
-    var lat = parseFloat("{{ donation.latitude|default:'26.85' }}");
-    var lng = parseFloat("{{ donation.longitude|default:'80.95' }}");
-
-    var map = L.map('map_{{ donation.id }}').setView([lat, lng], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    L.marker([lat, lng])
-        .addTo(map)
-        .bindPopup("Donation Location")
-        .openPopup();
-</script>
-        <div class="col-md-4">
-
-            <div class="card shadow-sm mb-4" style="border-radius: 15px;">
-
-                <div class="card-body">
-
-                    <h5 class="card-title text-primary fw-bold">
-                        {{ donation.event.name }}
-                    </h5>
-
-                    <p><strong>Location:</strong> {{ donation.event.location }}</p>
-                    <p><strong>Date:</strong> {{ donation.event.date }}</p>
-
-                    <p class="text-muted small">
-                        {{ donation.description }}
-                    </p>
-
-                    <p><strong>Quantity:</strong> {{ donation.quantity }}</p>
-                    <p><strong>Valid Till:</strong> {{ donation.available_until }}</p>
-                    <p><strong>Contact:</strong> {{ donation.phone_number }}</p>
-
-                    <!-- Accept Button -->
-                   <form method="post" action="{% url 'accept_delivery' donation.id %}">
-                     {% csrf_token %}
-                   <button type="submit" class="btn btn-primary w-100">
-                         Accept Donation
-                          </button>
-                           </form>
+                    <span class="position-absolute top-0 end-0 m-2 badge bg-danger live-countdown"
+                          data-expiry="{{ donation.available_until|date:'c' }}">
+                        {{ donation.available_until|timeuntil }}
+                    </span>
                 </div>
 
+                <!-- BODY -->
+                <div class="card-body d-flex flex-column">
+                    <h5 class="fw-bold text-primary">{{ donation.event.name }}</h5>
+                    <p class="small text-muted">{{ donation.event.location }}</p>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <small><b>Qty:</b> {{ donation.quantity }}</small>
+                        <small><b>📞</b> {{ donation.phone_number }}</small>
+                    </div>
+
+                    <p class="small text-secondary flex-grow-1">
+                        {{ donation.description|truncatewords:12 }}
+                    </p>
+
+                    <form method="post" action="{% url 'accept_delivery' donation.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-primary w-100">Claim Food</button>
+                    </form>
+                </div>
             </div>
-
         </div>
-
         {% empty %}
-        <div class="text-center mt-5">
-            <h5 class="text-muted">No donations available 😔</h5>
-        </div>
+        <p>No pending donations.</p>
         {% endfor %}
+    </div>
 
+
+    <!-- 🟢 APPROVED / CLAIMED -->
+    <div class="d-flex justify-content-between align-items-center mt-5 mb-3">
+        <h3 class="fw-bold text-success">✅ Your Claimed Donations</h3>
+        <span class="badge bg-success rounded-pill px-3">
+            {{ approved_donations|length }} Claimed
+        </span>
+    </div>
+
+    <div class="row">
+        {% for donation in approved_donations %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card shadow-sm h-100 border-0" style="border-radius: 20px; overflow: hidden;">
+
+                <!-- IMAGE -->
+                <div style="height: 160px;">
+                    {% if donation.image %}
+                        <img src="{{ donation.image.url }}" class="w-100 h-100" style="object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'core/donation_banner.png' %}" class="w-100 h-100" style="object-fit: cover;">
+                    {% endif %}
+                </div>
+
+                <!-- BODY -->
+                <div class="card-body">
+                    <h5 class="fw-bold text-success">{{ donation.event.name }}</h5>
+                    <p class="small text-muted">{{ donation.event.location }}</p>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <small><b>Qty:</b> {{ donation.quantity }}</small>
+                        <small><b>📞</b> {{ donation.phone_number }}</small>
+                    </div>
+
+                    <span class="badge bg-success w-100 py-2">
+                        ✔ Claimed by You
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No claimed donations yet.</p>
+        {% endfor %}
     </div>
 
 </div>
+
+<!-- ⏳ COUNTDOWN -->
+<script>
+setInterval(() => {
+    document.querySelectorAll('.live-countdown').forEach(el => {
+        const expiry = new Date(el.dataset.expiry).getTime();
+        const now = new Date().getTime();
+        const diff = expiry - now;
+
+        if (diff <= 0) {
+            el.innerHTML = "Expired";
+            return;
+        }
+
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        el.innerHTML = `${h}h ${m}m`;
+    });
+}, 1000);
+</script>
 
 {% endblock %}

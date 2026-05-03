@@ -43,10 +43,10 @@ class FoodDonation(models.Model):
     longitude = models.FloatField(null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="donations")
-    description = models.TextField()
     quantity = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     available_until = models.DateTimeField()
+    image = models.ImageField(upload_to='donations/', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
 
     assigned_volunteer = models.ForeignKey(

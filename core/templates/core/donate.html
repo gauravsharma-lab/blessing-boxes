@@ -2,142 +2,181 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 
-<div class="container mt-5 mb-5">
+<style>
+    body { background: #f5f7fb; font-family: 'Segoe UI', sans-serif; }
+    .donation-wrapper { max-width: 750px; margin: auto; }
+    .donation-card { background: #fff; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); overflow: hidden; }
+    .header { background: #198754; color: white; padding: 18px; text-align: center; }
+    .header h4 { margin: 0; font-weight: 600; font-size: 25px; }
+    .form-section { padding: 20px 25px; }
 
-    <div class="card shadow-lg" style="max-width:700px;margin:auto;border-radius:15px;">
+    label { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 5px; }
+    input, textarea { border-radius: 8px !important; padding: 8px !important; font-size: 14px; border: 1px solid #ddd !important; }
+    input:focus, textarea:focus { border-color: #198754 !important; box-shadow: none !important; }
 
-        <div class="bg-success text-white p-3 text-center">
-            <h3>🍱 Donate Food</h3>
+    input::placeholder, textarea::placeholder {
+        color: #aaa !important;
+        font-size: 13px;
+    }
+
+    #map { height: 350px; border-radius: 10px; margin-top: 8px; }
+
+    .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #198754;
+        border-left: 4px solid #198754;
+        padding-left: 8px;
+        margin-top: 15px;
+        margin-bottom: 8px;
+    }
+
+    .btn-success { border-radius: 10px; padding: 10px; font-size: 15px; font-weight: 600; }
+</style>
+
+<div class="container mt-4 mb-4 donation-wrapper">
+    <div class="donation-card">
+        <div class="header">
+            <h4>🍱 Donate Food</h4>
         </div>
 
-        <div class="p-4">
-            <form method="post">
+        <div class="form-section">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
-                <!-- 🔍 Search Box -->
-                <input id="searchBox" class="form-control mb-3" type="text"
-                       placeholder="Search location (e.g. KNIT Sultanpur)">
+                <!-- LOCATION -->
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" onclick="getCurrentLocation()">
+                    📍 Use My Current Location
+                </button>
 
-                <!-- 🗺️ Google Map -->
-                <div id="map" style="height:400px;border-radius:10px;"></div>
+                <div id="map"></div>
+                <small class="text-muted">Click on map or search to select exact location</small>
 
-                <!-- Hidden fields -->
                 <input type="hidden" name="latitude" id="lat">
                 <input type="hidden" name="longitude" id="lng">
 
-                <!-- Auto address -->
                 <div class="mt-3">
-                    <label>Location</label>
-                    <input type="text" id="location" name="location"
-                           class="form-control" readonly required>
+                    <label>Selected Address</label>
+                    <input type="text" id="location_text" name="location" class="form-control" readonly required>
                 </div>
 
-                <h5 class="mt-4">Event Details</h5>
+                <!-- EVENT DETAILS -->
+                <div class="section-title">Event Details</div>
 
-                <input type="text" name="event_name"
-                       class="form-control mb-2"
-                       placeholder="Event Name" required>
+                <label>Event Name</label>
+                <input type="text" name="event_name" class="form-control mb-2"
+                       placeholder="e.g. Wedding, Birthday Party" required>
 
-                <input type="tel" name="phone_number"
-                       class="form-control mb-3"
-                       placeholder="Mobile Number" required>
+                <label>Contact Number</label>
+                <input type="tel" name="phone_number" class="form-control mb-2"
+                       placeholder="Enter 10-digit mobile number" required>
 
-                <h5>Food Details</h5>
+                <!-- FOOD DETAILS -->
+                <div class="section-title">Food Details</div>
 
-                {{ form.description }}
-                {{ form.quantity }}
-                {{ form.available_until }}
+                <label>Food Description</label>
+                <div class="mb-2">
+                    {{ form.description }}
+                    <small class="text-muted">Mention items (e.g. puri sabzi, rice, gulab jamun)</small>
+                </div>
 
+                <label>Quantity</label>
+                <div class="mb-2">
+                    {{ form.quantity }}
+                    <small class="text-muted">Approx number of people it can serve</small>
+                </div>
+
+                <label>Valid Till (Expiry Time)</label>
+                <div class="mb-2">
+                    {{ form.available_until }}
+                    <small class="text-danger">After this time, food will be marked expired</small>
+                </div>
+
+                <!-- IMAGE UPLOAD -->
+                <div class="section-title">Upload Food Image</div>
+
+                <label>Add Food Photo</label>
+                <input type="file" name="image" class="form-control mb-2" accept="image/*" onchange="previewImage(event)">
+
+                <img id="preview" style="width:100%; max-height:200px; object-fit:cover; border-radius:10px; display:none;">
+
+                <!-- SUBMIT -->
                 <button type="submit" class="btn btn-success w-100 mt-3">
-                    Submit Donation
+                    🚀 Submit Food Donation
                 </button>
-
             </form>
         </div>
-
     </div>
-
 </div>
 
-<!-- ✅ Google Maps Script -->
+<!-- SCRIPTS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
 <script>
-function initMap() {
+    var map = L.map('map').setView([22.9734, 78.6569], 5);
+    var marker;
 
-    const india = { lat: 22.9734, lng: 78.6569 };
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    const map = new google.maps.Map(document.getElementById("map"), {
-        center: india,
-        zoom: 5,
-        restriction: {
-            latLngBounds: {
-                north: 37.5,
-                south: 6.5,
-                west: 68.0,
-                east: 97.5,
-            },
-            strictBounds: false
+    var geocoder = L.Control.geocoder({ defaultMarkGeocode: false })
+    .on('markgeocode', function(e) {
+        var latlng = e.geocode.center;
+        updateMarker(latlng.lat, latlng.lng, e.geocode.name);
+        map.setView(latlng, 16);
+    }).addTo(map);
+
+    function updateMarker(lat, lng, address) {
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+            marker.on('dragend', function(e) {
+                var pos = marker.getLatLng();
+                reverseGeocode(pos.lat, pos.lng);
+            });
         }
+        document.getElementById('lat').value = lat;
+        document.getElementById('lng').value = lng;
+        if (address) document.getElementById('location_text').value = address;
+    }
+
+    map.on('click', function(e) {
+        updateMarker(e.latlng.lat, e.latlng.lng);
+        reverseGeocode(e.latlng.lat, e.latlng.lng);
     });
 
-    const input = document.getElementById("searchBox");
-    const searchBox = new google.maps.places.SearchBox(input);
+    function reverseGeocode(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('location_text').value = data.display_name;
+            });
+    }
 
-    let marker;
-
-    // 🔍 Search
-    searchBox.addListener("places_changed", function () {
-        const places = searchBox.getPlaces();
-
-        if (!places || places.length === 0) return;
-
-        const place = places[0];
-
-        if (!place.geometry) return;
-
-        const location = place.geometry.location;
-
-        if (marker) marker.setMap(null);
-
-        marker = new google.maps.Marker({
-            map: map,
-            position: location
+    function getCurrentLocation() {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            map.setView([lat, lng], 16);
+            updateMarker(lat, lng);
+            reverseGeocode(lat, lng);
         });
+    }
 
-        map.setCenter(location);
-        map.setZoom(17);
+    // IMAGE PREVIEW
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('preview');
 
-        document.getElementById("lat").value = location.lat();
-        document.getElementById("lng").value = location.lng();
-        document.getElementById("location").value = place.formatted_address;
-    });
-
-    // 📍 Click on map
-    map.addListener("click", function (e) {
-
-        if (marker) marker.setMap(null);
-
-        marker = new google.maps.Marker({
-            position: e.latLng,
-            map: map
-        });
-
-        const geocoder = new google.maps.Geocoder();
-
-        geocoder.geocode({ location: e.latLng }, function (results, status) {
-            if (status === "OK" && results[0]) {
-                document.getElementById("location").value =
-                    results[0].formatted_address;
-            }
-        });
-
-        document.getElementById("lat").value = e.latLng.lat();
-        document.getElementById("lng").value = e.latLng.lng();
-    });
-}
-
-//  Load map
-window.onload = initMap;
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+        }
+    }
 </script>
 
 {% endblock %}

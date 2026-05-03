@@ -102,32 +102,53 @@ def signup(request):
 @login_required(login_url='login')
 def dashboard(request):
 
-    # ✅ FIX: Ensure profile exists for all users
     profile, created = Profile.objects.get_or_create(
         user=request.user,
         defaults={'role': 'donor'}
     )
 
-    role = profile.role
+    role = profile.role.strip().lower()
+    print("User:", request.user)
+    print("ROLE:", role)
 
+    # 🟢 DONOR
     if role == 'donor':
         donations = FoodDonation.objects.filter(donor=request.user)
         return render(request, 'core/donor_dashboard.html', {'donations': donations})
 
+    # 🔵 VOLUNTEER
     elif role == 'volunteer':
         donations = FoodDonation.objects.all()
-        return render(request, 'core/volunteer_dashboard.html', {'donations': donations})
+        return render(request, 'core/volunteer.html', {'donations': donations})
 
+    # 🟡 NGO
     elif role == 'ngo':
-        donations = FoodDonation.objects.all()
-        return render(request, 'core/ngo_dashboard.html', {'donations': donations})
+        ngo, created = NGO.objects.get_or_create(
+            user=request.user,
+            defaults={
+                'name': request.user.username,
+                'location': 'Not Provided'
+            }
+        )
 
+        pending_donations = FoodDonation.objects.filter(status='Pending')
+
+        approved_donations = FoodDonation.objects.filter(
+            status='Approved',
+            assigned_ngo=ngo
+        )
+
+        return render(request, 'core/ngo_dashboard.html', {
+            'pending_donations': pending_donations,
+            'approved_donations': approved_donations
+        })
+
+    # 🔴 MANAGER
     elif role == 'manager':
         donations = FoodDonation.objects.all()
         return render(request, 'core/manager_dashboard.html', {'donations': donations})
 
     return redirect('homepage')
-
 
 # 🍱 Donate Food
  
@@ -136,7 +157,7 @@ def dashboard(request):
 @login_required(login_url='login')
 def donate_food(request):
     if request.method == 'POST':
-        form = FoodDonationForm(request.POST)
+        form = FoodDonationForm(request.POST, request.FILES)
 
         if form.is_valid():
 
@@ -154,6 +175,7 @@ def donate_food(request):
             donation = form.save(commit=False)
             donation.donor = request.user
             donation.event = event
+            donation.status = 'Pending'
 
             #  phone number 
             donation.phone_number = request.POST.get('phone_number')
@@ -173,33 +195,32 @@ def donate_food(request):
     return render(request, 'core/donate.html', {'form': form})
 
 # 🚚 Accept Delivery (Volunteer)
-@login_required(login_url='login')
+
+@login_required
 def accept_delivery(request, donation_id):
     donation = get_object_or_404(FoodDonation, id=donation_id)
 
-    profile = request.user.profile
+    try:
+        ngo = NGO.objects.get(user=request.user)
+    except NGO.DoesNotExist:
+        messages.error(request, "You are not registered as NGO!")
+        return redirect('dashboard')
 
-   
-    if profile.role == 'ngo':
-        ngo = NGO.objects.filter(user=request.user).first()
+    donation.assigned_ngo = ngo
+    donation.status = 'Approved'
 
-        pending_donations = FoodDonation.objects.filter(status='Pending')
-        accepted_donations = FoodDonation.objects.filter(assigned_ngo=ngo)
-
-        return render(request, 'core/ngo_dashboard.html', {
-            'pending_donations': pending_donations,
-            'accepted_donations': accepted_donations
-        })
-    elif profile.role == 'volunteer':
-        donation.assigned_volunteer = request.user
-        donation.status = "Picked"
+    # Assign volunteer
+    volunteer = User.objects.filter(profile__role='volunteer').first()
+    if volunteer:
+        donation.assigned_volunteer = volunteer
 
     donation.save()
 
-    messages.success(request, "Donation accepted successfully!")
+    messages.success(request, "Food claimed successfully!")
     return redirect('dashboard')
 
-#contact us
+
+ #contact us
 def contact(request):
     if request.method == 'POST':
         name = request.POST.get('name')

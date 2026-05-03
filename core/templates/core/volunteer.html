@@ -1,39 +1,81 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Volunteer Registration</h2>
-
-    {% if form.errors %}
-        <div class="alert alert-danger">
-            Please correct the errors below.
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary">🚚 Delivery Assistance</h2>
+            <p class="text-muted">Help transport food from Donors to NGOs in your area.</p>
         </div>
-    {% endif %}
-
-    <form method="post" class="border p-4 rounded bg-light shadow-sm mb-5">
-        {% csrf_token %}
-        <div class="mb-3">
-            {{ form.donation.label_tag }}
-            {{ form.donation }}
-            {{ form.donation.errors }}
+        <div class="text-end">
+            <span class="badge bg-primary rounded-pill p-2 px-3">Active Volunteer: {{ request.user.username }}</span>
         </div>
-        <button type="submit" class="btn btn-primary">Register</button>
-    </form>
+    </div>
 
-    <h3>Available Donations</h3>
-    <ul class="list-group">
+    <div class="row">
         {% for donation in donations %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>Event:</strong> {{ donation.event.name }} <br>
-                    <strong>Description:</strong> {{ donation.description }} <br>
-                    <strong>Location:</strong> {{ donation.event.location }}
-                </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
+                
+                <div id="map_{{ donation.id }}" style="height: 200px; background: #eee; border-top-left-radius: 15px; border-top-right-radius: 15px;"></div>
 
-                <form method="post" action="{% url 'accept_delivery' donation.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success btn-sm">Accept Delivery</button>
-                </form>
-            </li>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="badge bg-info text-dark">Ready for Pickup</span>
+                        <span class="text-danger fw-bold small"><i class="bi bi-clock"></i> {{ donation.available_until|timeuntil }}</span>
+                    </div>
+
+                    <h5 class="card-title fw-bold">{{ donation.event.name }}</h5>
+                    
+                    <div class="delivery-route mb-3 p-2 bg-light rounded">
+                        <div class="small mb-1">
+                            <i class="bi bi-geo-alt-fill text-danger"></i> <strong>From:</strong> {{ donation.event.location|truncatechars:30 }}
+                        </div>
+                        <div class="small">
+                            <i class="bi bi-house-door-fill text-success"></i> <strong>To:</strong> {{ donation.assigned_ngo.name }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <form method="post" action="{% url 'accept_delivery' donation.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary fw-bold">Accept Assistance Task</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            (function() {
+                // Centering map between donor and (placeholder) NGO location
+                var lat = parseFloat("{{ donation.latitude }}");
+                var lng = parseFloat("{{ donation.longitude }}");
+                var map = L.map('map_{{ donation.id }}', {zoomControl: false}).setView([lat, lng], 14);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                
+                // Pickup Marker
+                L.marker([lat, lng]).addTo(map).bindPopup("Pickup Point").openPopup();
+            })();
+        </script>
         {% empty %}
-            <li class="list-group-item">No donations available.</li>
+        <div class="col-12 text-center py-5">
+            <img src="{% static 'core/images/no_tasks.png' %}" style="width: 150px; opacity: 0.5;">
+            <p class="text-muted mt-3">No pending deliveries. Great job, everything is moving!</p>
+        </div>
         {% endfor %}
-    </ul>
+    </div>
 </div>
+
+<style>
+    .card:hover {
+        transform: translateY(-5px);
+        transition: 0.3s;
+    }
+    .delivery-route {
+        border-left: 3px solid #0d6efd;
+    }
+</style>
+{% endblock %}
