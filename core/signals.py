@@ -5,9 +5,19 @@ from django.contrib.auth.models import User
 from .models import FoodDonation, NGO, Profile
 
 
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    else:
+        if hasattr(instance, 'profile'):
+            instance.profile.save()
+
+
 @receiver(post_save, sender=FoodDonation)
 def notify_ngos(sender, instance, created, **kwargs):
     if created:
+        # 1. Send Email Notification
         ngos = NGO.objects.all()
         emails = [ngo.email for ngo in ngos if ngo.email]
 
@@ -33,28 +43,19 @@ Please log in to accept the donation.
             fail_silently=True
         )
 
-
-@receiver(post_save, sender=User)
-def create_or_update_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-    else:
-        if hasattr(instance, 'profile'):
-            instance.profile.save()
-
-
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-
-@receiver(post_save, sender=FoodDonation)
-def notify_ngos(sender, instance, created, **kwargs):
-    if created:
-        channel_layer = get_channel_layer()
-
-        async_to_sync(channel_layer.group_send)(
-            "notifications",
-            {
-                "type": "send_notification",
-                "message": f"New donation at {instance.event.location}"
-            }
-        )
+        # 2. Send Real-time Notification (if channels is installed)
+        try:
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    "notifications",
+                    {
+                        "type": "send_notification",
+                        "message": f"New donation at {instance.event.location}"
+                    }
+                )
+        except ImportError:
+            pass
