@@ -22,11 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6u&ij)@8vdg5=)kl$lgxpzxrxb#qpaev(isa=6vlyzuw9n1rqo'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-6u&ij)@8vdg5=)kl$lgxpzxrxb#qpaev(isa=6vlyzuw9n1rqo')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-ALLOWED_HOSTS = []
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') if os.environ.get('ALLOWED_HOSTS') else []
 
 
 # Application definition
@@ -124,8 +125,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'blessingsboxes5@gmail.com'
-EMAIL_HOST_PASSWORD = 'zspmuwnvkhyzqtok'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'blessingsboxes5@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'zspmuwnvkhyzqtok')
 
 
 LOGIN_URL = 'login'
