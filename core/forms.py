@@ -122,8 +122,27 @@ class SignupForm(UserCreationForm):
 class NGOForm(forms.ModelForm):
     class Meta:
         model = NGO
-        fields = ['name', 'location']
+        fields = ['name', 'location', 'phone_number']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Organization Name'}),
             'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full Delivery Address'}),
-        }
+            'phone_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'NGO Contact Number',
+                'maxlength': '15'
+            }),
+        }
+
+from .models import Profile
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['phone_number']
+        widgets = {
+            'phone_number': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Your Phone Number',
+                'maxlength': '15'
+            }),
+        }

@@ -28,4 +28,5 @@ urlpatterns = [
     # Volunteer URLs
     path('volunteer/accept/<int:donation_id>/', views.volunteer_accept_task, name='volunteer_accept_task'),
     path('volunteer/complete/<int:donation_id>/', views.volunteer_complete_delivery, name='volunteer_complete_delivery'),
+    path('update-profile/', views.update_profile, name='update_profile'),
 ]

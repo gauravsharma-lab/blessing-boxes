@@ -7,9 +7,16 @@
     <div class="bg-white p-4 shadow-sm rounded-4 mb-5 border-start border-primary border-5 d-flex justify-content-between align-items-center">
         <div>
             <h2 class="fw-bold text-dark mb-0">🏢 NGO Dashboard</h2>
-            {% if ngo.location == "Not Provided" %}
+            {% if ngo.location == "Not Provided" or not ngo.phone_number %}
                 <span class="text-danger small fw-bold anim-pulse ms-2">
-                    <i class="bi bi-exclamation-circle-fill"></i> Address required for volunteers
+                    <i class="bi bi-exclamation-circle-fill"></i> 
+                    {% if ngo.location == "Not Provided" and not ngo.phone_number %}
+                        Address & Phone required for volunteers
+                    {% elif ngo.location == "Not Provided" %}
+                        Address required for volunteers
+                    {% else %}
+                        Phone number required for volunteers
+                    {% endif %}
                 </span>
             {% endif %}
         </div>
@@ -40,6 +47,10 @@
                         <div class="mb-3">
                             <label class="form-label small fw-bold">Delivery Address</label>
                             {{ form.location }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Contact Number</label>
+                            {{ form.phone_number }}
                         </div>
                         <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold shadow-sm">Save Changes</button>
@@ -143,9 +154,19 @@
                                     <i class="bi bi-trash"></i> Delete
                                 </a>
                             {% else %}
-                                <span class="badge bg-success w-100 py-2">
+                                <span class="badge bg-success w-100 py-2 mb-2">
                                     ✔ Claimed by You
                                 </span>
+                                {% if donation.assigned_volunteer %}
+                                    <div class="small text-muted text-center">
+                                        <b>Volunteer:</b> {{ donation.assigned_volunteer.username }}<br>
+                                        {% if donation.assigned_volunteer.profile.phone_number %}
+                                            <span class="text-primary"><i class="bi bi-telephone-fill"></i> {{ donation.assigned_volunteer.profile.phone_number }}</span>
+                                        {% else %}
+                                            <span class="text-secondary small">(No phone provided)</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>

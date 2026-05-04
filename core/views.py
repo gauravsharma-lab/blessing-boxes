@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout
 from django.contrib import messages
 
 from .models import FoodDonation, Profile, NGO
-from .forms import FoodDonationForm, SignupForm, LoginForm, NGOForm
+from .forms import FoodDonationForm, SignupForm, LoginForm, NGOForm, ProfileForm
 from .models import Event 
 from django.utils import timezone
 from django.core.mail import send_mail
@@ -106,7 +106,8 @@ def dashboard(request):
     # 🟢 DONOR
     if role == 'donor':
         donations = FoodDonation.objects.filter(donor=request.user)
-        return render(request, 'core/donor_dashboard.html', {'donations': donations})
+        profile_form = ProfileForm(instance=profile)
+        return render(request, 'core/donor_dashboard.html', {'donations': donations, 'profile_form': profile_form})
 
     # 🔵 VOLUNTEER
     elif role == 'volunteer':
@@ -124,10 +125,13 @@ def dashboard(request):
             status='Delivered'
         )
 
+        profile_form = ProfileForm(instance=profile)
+
         return render(request, 'core/volunteer.html', {
             'available_tasks': available_tasks,
             'my_deliveries': my_deliveries,
-            'completed_deliveries': completed_deliveries
+            'completed_deliveries': completed_deliveries,
+            'profile_form': profile_form
         })
 
     # 🟡 NGO
@@ -444,4 +448,15 @@ def update_ngo_profile(request):
             form.save()
             messages.success(request, "NGO profile updated successfully!")
             return redirect('dashboard')
+    return redirect('dashboard')
+
+# ?? Update Profile (Volunteer/Donor)
+@login_required
+def update_profile(request):
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
     return redirect('dashboard')
