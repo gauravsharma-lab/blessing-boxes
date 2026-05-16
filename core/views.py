@@ -476,5 +476,9 @@ def test_email(request):
         messages.success(request, "Test email sent! Check your inbox (and spam folder).")
         return redirect('homepage')
     except Exception as e:
-        messages.error(request, f"Email failed: {e}")
-        return redirect('homepage')
+        import traceback
+        error_details = traceback.format_exc()
+        return render(request, 'core/homepage.html', {
+            'error_test': f"Email failed: {e}",
+            'traceback': error_details
+        })
