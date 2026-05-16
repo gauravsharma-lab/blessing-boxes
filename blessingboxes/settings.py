@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-6u&ij)@8vdg5=)kl$lgxpzxrxb#qpaev(isa=6vlyzuw9n1rqo')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'blessing-boxes.onrender.com,localhost,127.0.0.1').split(',')
 ALLOWED_HOSTS.append('.onrender.com')
@@ -35,6 +35,7 @@ CSRF_TRUSTED_ORIGINS = ['https://blessing-boxes.onrender.com']
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
