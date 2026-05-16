@@ -142,6 +142,29 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'blessingsboxes5@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'zspmuwnvkhyzqtok')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_TIMEOUT = 10  # ⏱️ Prevents hanging on slow connections
+
+# 📝 Logging for Render Logs
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
 
 
 LOGIN_URL = 'login'
@@ -165,5 +188,28 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # admin login
+# username:Admin
+#Password : Gaurav
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
 # username:Admin
 #Password : Gaurav

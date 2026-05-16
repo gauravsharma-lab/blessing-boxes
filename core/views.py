@@ -461,24 +461,21 @@ def update_profile(request):
     return redirect('dashboard')
 
 
-# 🧪 Test Email View (Remove after testing)
+# 🧪 Test Email View (Super Simple for Debugging)
 def test_email(request):
+    from django.http import HttpResponse
+    from django.core.mail import send_mail
+    from django.conf import settings
+    
     try:
-        from django.core.mail import send_mail
-        from django.conf import settings
         send_mail(
             subject="Blessing Boxes SMTP Test",
-            message="If you are reading this, your email configuration on Render is working!",
+            message="Connection Successful!",
             from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[settings.EMAIL_HOST_USER], # send to yourself
+            recipient_list=[settings.EMAIL_HOST_USER],
             fail_silently=False,
         )
-        messages.success(request, "Test email sent! Check your inbox (and spam folder).")
-        return redirect('homepage')
+        return HttpResponse("✅ SUCCESS: Test email sent! Check your inbox.")
     except Exception as e:
         import traceback
-        error_details = traceback.format_exc()
-        return render(request, 'core/homepage.html', {
-            'error_test': f"Email failed: {e}",
-            'traceback': error_details
-        })
+        return HttpResponse(f"❌ FAILED: {str(e)}<br><br><pre>{traceback.format_exc()}</pre>")
