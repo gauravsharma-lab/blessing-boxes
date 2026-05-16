@@ -29,8 +29,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'blessing-boxes.onrender.com,localhost,127.0.0.1').split(',')
 ALLOWED_HOSTS.append('.onrender.com')
-CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host]
-CSRF_TRUSTED_ORIGINS.append('https://blessing-boxes.onrender.com')
+CSRF_TRUSTED_ORIGINS = ['https://blessing-boxes.onrender.com']
 
 
 # Application definition
