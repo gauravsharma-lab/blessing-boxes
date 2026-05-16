@@ -3,7 +3,7 @@ services:
     name: blessing-boxes
     env: python
     buildCommand: "./build.sh"
-    startCommand: "python manage.py migrate && python manage.py shell -c \"from django.contrib.auth.models import User; User.objects.filter(username='Admin').exists() or User.objects.create_superuser('Admin', 'blessingsboxes5@gmail.com', 'Gaurav')\" && gunicorn blessingboxes.wsgi --workers 1 --threads 8 --timeout 120"
+    startCommand: "python manage.py migrate && python manage.py shell -c \"from django.contrib.auth.models import User; u, _ = User.objects.get_or_create(username='Admin'); u.set_password('Gaurav'); u.is_superuser=True; u.is_staff=True; u.save()\" && gunicorn blessingboxes.wsgi --workers 1 --threads 8 --timeout 120"
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
