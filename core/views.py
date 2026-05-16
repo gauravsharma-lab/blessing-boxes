@@ -105,9 +105,15 @@ def dashboard(request):
 
     # 🟢 DONOR
     if role == 'donor':
-        donations = FoodDonation.objects.filter(donor=request.user)
+        donations = FoodDonation.objects.filter(donor=request.user).order_by('-created_at')
+        # Get unique NGOs who have claimed from this donor
+        past_ngos = NGO.objects.filter(fooddonation__donor=request.user).distinct()
         profile_form = ProfileForm(instance=profile)
-        return render(request, 'core/donor_dashboard.html', {'donations': donations, 'profile_form': profile_form})
+        return render(request, 'core/donor_dashboard.html', {
+            'donations': donations, 
+            'profile_form': profile_form,
+            'past_ngos': past_ngos
+        })
 
     # 🔵 VOLUNTEER
     elif role == 'volunteer':
