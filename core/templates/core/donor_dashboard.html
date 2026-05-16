@@ -86,7 +86,18 @@
                     <!-- Info -->
                     <div class="bg-light p-2 rounded mb-3">
                         <small><strong>Qty:</strong> {{ donation.quantity }}</small><br>
-                        <small><strong>Valid Till:</strong> {{ donation.available_until|date:"M d, H:i" }}</small>
+                        <small><strong>Valid Till:</strong> {{ donation.available_until|date:"M d, H:i" }}</small><br>
+                        <div class="mt-1 border-top pt-1">
+                            {% if donation.assigned_ngo %}
+                                <small class="text-primary d-block">
+                                    <i class="bi bi-building"></i> <strong>Claimed by:</strong> {{ donation.assigned_ngo.name }}
+                                </small>
+                            {% else %}
+                                <small class="text-muted d-block italic">
+                                    <i class="bi bi-hourglass-split"></i> Not claimed yet
+                                </small>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <!-- Status and Actions -->
