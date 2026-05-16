@@ -89,28 +89,16 @@
     </div>
 </nav>
 
-<!-- 🔔 Messages / Notifications -->
+{% if messages %}
 <div class="container mt-3">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    {% if error_test %}
-        <div class="alert alert-danger shadow">
-            <h4 class="alert-heading">📧 Email Test Failed!</h4>
-            <p>{{ error_test }}</p>
-            <hr>
-            <p class="mb-0"><strong>Technical Details:</strong></p>
-            <pre class="bg-light p-3 mt-2" style="font-size: 0.8rem;">{{ traceback }}</pre>
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-    {% endif %}
+    {% endfor %}
 </div>
-
+{% endif %}
 <!-- Hero Section -->
 <div class="hero-section">
     <div>
