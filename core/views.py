@@ -223,8 +223,8 @@ def donate_food(request):
                         recipient_list=list(ngo_emails),
                         fail_silently=False,
                     )
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Email sending failed (donate_food): {e}")
 
             messages.success(request, "Donation submitted successfully!")
             return redirect('dashboard')
@@ -278,8 +278,8 @@ def accept_delivery(request, donation_id):
                 recipient_list=list(volunteer_emails),
                 fail_silently=False,
             )
-        except:
-            pass
+        except Exception as e:
+            print(f"Email sending failed (accept_delivery): {e}")
 
     messages.success(request, "Food claimed successfully!")
     return redirect('dashboard')
@@ -340,9 +340,8 @@ def contact(request):
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[settings.EMAIL_HOST_USER],
             )
-        except:
-            # If email fails, still continue (for now)
-            pass
+        except Exception as e:
+            print(f"Email sending failed (contact): {e}")
 
         messages.success(request, "Message sent successfully!")
         return redirect('contact')
@@ -460,3 +459,22 @@ def update_profile(request):
             form.save()
             messages.success(request, 'Profile updated successfully!')
     return redirect('dashboard')
+
+
+# 🧪 Test Email View (Remove after testing)
+def test_email(request):
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        send_mail(
+            subject="Blessing Boxes SMTP Test",
+            message="If you are reading this, your email configuration on Render is working!",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[settings.EMAIL_HOST_USER], # send to yourself
+            fail_silently=False,
+        )
+        messages.success(request, "Test email sent! Check your inbox (and spam folder).")
+        return redirect('homepage')
+    except Exception as e:
+        messages.error(request, f"Email failed: {e}")
+        return redirect('homepage')

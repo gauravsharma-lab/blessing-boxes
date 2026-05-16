@@ -24,6 +24,7 @@ def notify_ngos(sender, instance, created, **kwargs):
         # 📍 Google Maps link
         map_link = f"https://www.google.com/maps?q={instance.latitude},{instance.longitude}"
 
+        from django.conf import settings
         send_mail(
             subject="New Food Donation Available 🍱",
             message=f"""
@@ -38,9 +39,9 @@ A new food donation is available!
 
 Please log in to accept the donation.
 """,
-            from_email="your_email@gmail.com",
+            from_email=settings.EMAIL_HOST_USER,
             recipient_list=emails,
-            fail_silently=True
+            fail_silently=False
         )
 
         # 2. Send Real-time Notification (if channels is installed)
