@@ -219,7 +219,7 @@ def donate_food(request):
                             f"Thank you for your service,\n"
                             f"The Blessing Boxes Team"
                         ),
-                        from_email=f"Blessing Boxes <{settings.EMAIL_HOST_USER}>",
+                        from_email=f"Blessing Boxes <{settings.DEFAULT_FROM_EMAIL}>",
                         recipient_list=list(ngo_emails),
                         fail_silently=False,
                     )
@@ -274,7 +274,7 @@ def accept_delivery(request, donation_id):
                     f"Thank you for helping us reduce food waste!\n"
                     f"The Blessing Boxes Team"
                 ),
-                from_email=f"Blessing Boxes <{settings.EMAIL_HOST_USER}>",
+                from_email=f"Blessing Boxes <{settings.DEFAULT_FROM_EMAIL}>",
                 recipient_list=list(volunteer_emails),
                 fail_silently=False,
             )
@@ -337,8 +337,8 @@ def contact(request):
             send_mail(
                 subject="New Contact Message - BlessingBoxes",
                 message=full_message,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[settings.EMAIL_HOST_USER],
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.DEFAULT_FROM_EMAIL],
             )
         except Exception as e:
             print(f"Email sending failed (contact): {e}")
@@ -471,8 +471,8 @@ def test_email(request):
         send_mail(
             subject="Blessing Boxes SMTP Test",
             message="Connection Successful!",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[settings.EMAIL_HOST_USER],
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.DEFAULT_FROM_EMAIL],
             fail_silently=False,
         )
         return HttpResponse("✅ SUCCESS: Test email sent! Check your inbox.")

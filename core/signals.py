@@ -39,7 +39,7 @@ A new food donation is available!
 
 Please log in to accept the donation.
 """,
-            from_email=settings.EMAIL_HOST_USER,
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=emails,
             fail_silently=False
         )
