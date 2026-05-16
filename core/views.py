@@ -459,19 +459,3 @@ def update_profile(request):
     return redirect('dashboard')
 
 
-# 🧪 Test Email View (Using SendGrid API)
-def test_email(request):
-    from django.http import HttpResponse
-    from .utils import send_sendgrid_email
-    from django.conf import settings
-    
-    success = send_sendgrid_email(
-        subject="Blessing Boxes API Test",
-        message="If you see this, the SendGrid HTTP API is working!",
-        recipient_list=[settings.DEFAULT_FROM_EMAIL]
-    )
-    
-    if success:
-        return HttpResponse("✅ SUCCESS: Test email sent via API! Check your inbox.")
-    else:
-        return HttpResponse("❌ FAILED: Check Render logs for the SendGrid API error.")
