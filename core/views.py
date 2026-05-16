@@ -208,7 +208,8 @@ def donate_food(request):
             ngo_emails = User.objects.filter(profile__role='ngo').values_list('email', flat=True)
             if ngo_emails:
                 try:
-                    send_mail(
+                    from .utils import send_sendgrid_email
+                    send_sendgrid_email(
                         subject="[Blessing Boxes] New Food Donation Available Near You",
                         message=(
                             f"Greetings,\n\n"
@@ -219,9 +220,7 @@ def donate_food(request):
                             f"Thank you for your service,\n"
                             f"The Blessing Boxes Team"
                         ),
-                        from_email=f"Blessing Boxes <{settings.DEFAULT_FROM_EMAIL}>",
-                        recipient_list=list(ngo_emails),
-                        fail_silently=False,
+                        recipient_list=list(ngo_emails)
                     )
                 except Exception as e:
                     print(f"Email sending failed (donate_food): {e}")
@@ -262,7 +261,8 @@ def accept_delivery(request, donation_id):
     volunteer_emails = User.objects.filter(profile__role='volunteer').values_list('email', flat=True)
     if volunteer_emails:
         try:
-            send_mail(
+            from .utils import send_sendgrid_email
+            send_sendgrid_email(
                 subject="[Blessing Boxes] New Pickup Task Available",
                 message=(
                     f"Greetings,\n\n"
@@ -274,9 +274,7 @@ def accept_delivery(request, donation_id):
                     f"Thank you for helping us reduce food waste!\n"
                     f"The Blessing Boxes Team"
                 ),
-                from_email=f"Blessing Boxes <{settings.DEFAULT_FROM_EMAIL}>",
-                recipient_list=list(volunteer_emails),
-                fail_silently=False,
+                recipient_list=list(volunteer_emails)
             )
         except Exception as e:
             print(f"Email sending failed (accept_delivery): {e}")
@@ -334,10 +332,10 @@ def contact(request):
         """
 
         try:
-            send_mail(
+            from .utils import send_sendgrid_email
+            send_sendgrid_email(
                 subject="New Contact Message - BlessingBoxes",
                 message=full_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[settings.DEFAULT_FROM_EMAIL],
             )
         except Exception as e:
@@ -461,21 +459,19 @@ def update_profile(request):
     return redirect('dashboard')
 
 
-# 🧪 Test Email View (Super Simple for Debugging)
+# 🧪 Test Email View (Using SendGrid API)
 def test_email(request):
     from django.http import HttpResponse
-    from django.core.mail import send_mail
+    from .utils import send_sendgrid_email
     from django.conf import settings
     
-    try:
-        send_mail(
-            subject="Blessing Boxes SMTP Test",
-            message="Connection Successful!",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.DEFAULT_FROM_EMAIL],
-            fail_silently=False,
-        )
-        return HttpResponse("✅ SUCCESS: Test email sent! Check your inbox.")
-    except Exception as e:
-        import traceback
-        return HttpResponse(f"❌ FAILED: {str(e)}<br><br><pre>{traceback.format_exc()}</pre>")
+    success = send_sendgrid_email(
+        subject="Blessing Boxes API Test",
+        message="If you see this, the SendGrid HTTP API is working!",
+        recipient_list=[settings.DEFAULT_FROM_EMAIL]
+    )
+    
+    if success:
+        return HttpResponse("✅ SUCCESS: Test email sent via API! Check your inbox.")
+    else:
+        return HttpResponse("❌ FAILED: Check Render logs for the SendGrid API error.")
