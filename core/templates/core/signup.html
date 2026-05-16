@@ -58,83 +58,71 @@
 <body>
 
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-    <div class="card shadow-lg signup-card col-lg-7">
-        <div class="row g-0">
-
-            <!-- Left Form -->
-            <div class="col-md-6 bg-white">
-                <div class="form-section">
-
-                    <!-- Logo -->
-                    <div class="text-center mb-3">
-                        <img src="{% static 'core/logo.png' %}" alt="Logo" width="70" class="mb-2 logo">
-                        <h4 class="fw-bold">Create Account</h4>
-                        <p class="text-muted small">Join BlessingBoxes</p>
-                    </div>
-
-                     {% if request.session.selected_role %}
-                         <div class="alert alert-info text-center">
-                            Creating account as <strong>{{ request.session.selected_role|title }}</strong>
-                         </div>
-                      {% endif %}
-
-                    <!-- Form -->
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-
-                        <div class="mb-2">
-                            {{ form.username }}
-                        </div>
-
-                        <div class="mb-2">
-                            {{ form.email }}
-                        </div>
-
-                        <div class="mb-2">
-                            {{ form.password1 }}
-                        </div>
-
-                        <div class="mb-2">
-                            {{ form.password2 }}
-                        </div>
-
-                        <!-- Errors -->
-                        {% if form.errors %}
-                            <div class="text-danger small mb-2">
-                                {{ form.errors }}
-                            </div>
-                        {% endif %}
-
-                        <!-- Show Password -->
-                        <div class="form-check mb-2">
-                            <input type="checkbox" class="form-check-input" onclick="togglePassword()">
-                            <label class="form-check-label small">Show Passwords</label>
-                        </div>
-
-                        <!-- Button -->
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                Sign Up
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- Footer -->
-                    <div class="text-center mt-2">
-                        <small>
-                            Already have an account?
-                            <a href="{% url 'login' %}" class="fw-semibold text-decoration-none">
-                                Login
-                            </a>
-                        </small>
-                    </div>
-
-                </div>
+    <div class="card shadow-lg signup-card col-md-5">
+        <div class="form-section bg-white">
+            <!-- Logo -->
+            <div class="text-center mb-3">
+                <img src="{% static 'core/logo.png' %}" alt="Logo" width="70" class="mb-2 logo">
+                <h4 class="fw-bold">Create Account</h4>
+                <p class="text-muted small">Join BlessingBoxes</p>
             </div>
 
-            <!-- Right Image -->
-            <div class="col-md-6 d-none d-md-block signup-image"></div>
+             {% if request.session.selected_role %}
+                 <div class="alert alert-info text-center">
+                    Creating account as <strong>{{ request.session.selected_role|title }}</strong>
+                 </div>
+              {% endif %}
 
+            <!-- Form -->
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="mb-2">
+                    {{ form.username }}
+                </div>
+
+                <div class="mb-2">
+                    {{ form.email }}
+                </div>
+
+                <div class="mb-2">
+                    {{ form.password1 }}
+                </div>
+
+                <div class="mb-2">
+                    {{ form.password2 }}
+                </div>
+
+                <!-- Errors -->
+                {% if form.errors %}
+                    <div class="text-danger small mb-2">
+                        {{ form.errors }}
+                    </div>
+                {% endif %}
+
+                <!-- Show Password -->
+                <div class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" onclick="togglePassword()">
+                    <label class="form-check-label small">Show Passwords</label>
+                </div>
+
+                <!-- Button -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        Sign Up
+                    </button>
+                </div>
+            </form>
+
+            <!-- Footer -->
+            <div class="text-center mt-2">
+                <small>
+                    Already have an account?
+                    <a href="{% url 'login' %}" class="fw-semibold text-decoration-none">
+                        Login
+                    </a>
+                </small>
+            </div>
         </div>
     </div>
 </div>
