@@ -27,9 +27,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-6u&ij)@8vdg5=)kl$lgxp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') if os.environ.get('ALLOWED_HOSTS') else []
-
-CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS] if ALLOWED_HOSTS else []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'blessing-boxes.onrender.com,localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS.append('.onrender.com')
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host]
+CSRF_TRUSTED_ORIGINS.append('https://blessing-boxes.onrender.com')
 
 
 # Application definition
@@ -119,8 +120,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# Enable WhiteNoise's compression and caching
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
