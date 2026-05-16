@@ -87,20 +87,7 @@
 </ul>
         </div>
     </div>
-</nav>
-
-{% if messages %}
-<div class="container mt-3">
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    {% endfor %}
-</div>
-{% endif %}
-<!-- Hero Section -->
-<div class="hero-section">
+</nav>{% if messages %}<div class="container mt-3">{% for message in messages %}<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>{% endfor %}</div>{% endif %}<div class="hero-section">
     <div>
         <h1>BlessingBoxes</h1>
         <p class="lead">Connecting Surplus Food with Those in Need</p>
