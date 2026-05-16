@@ -3,7 +3,7 @@ services:
     name: blessing-boxes
     env: python
     buildCommand: "./build.sh"
-    startCommand: "python manage.py migrate; gunicorn blessingboxes.wsgi"
+    startCommand: "python manage.py migrate && gunicorn blessingboxes.wsgi --workers 1 --threads 8 --timeout 120"
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
