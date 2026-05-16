@@ -92,9 +92,8 @@
                                 <div class="text-primary mt-1">
                                     <small class="fw-bold d-block mb-1"><i class="bi bi-building"></i> Claimed by: {{ donation.assigned_ngo.name }}</small>
                                     <small class="d-block small"><i class="bi bi-telephone"></i> {{ donation.assigned_ngo.phone_number|default:"N/A" }}</small>
-                                    <small class="d-block small"><i class="bi bi-envelope"></i> {{ donation.assigned_ngo.email|default:"N/A" }}</small>
                                 </div>
-                            {% else %}
+{% else %}
                                 <small class="text-muted d-block italic">
                                     <i class="bi bi-hourglass-split"></i> Not claimed yet
                                 </small>
@@ -172,9 +171,6 @@
                     <h6 class="fw-bold mb-1">{{ ngo.name }}</h6>
                     <small class="text-muted d-block"><i class="bi bi-geo-alt-fill"></i> {{ ngo.location }}</small>
                     <small class="text-muted d-block"><i class="bi bi-telephone-fill"></i> {{ ngo.phone_number|default:"N/A" }}</small>
-                    <small class="text-muted d-block text-truncate px-2" title="{{ ngo.email }}">
-                        <i class="bi bi-envelope-fill"></i> {{ ngo.email|default:"N/A" }}
-                    </small>
                 </div>
             </div>
             {% endfor %}
