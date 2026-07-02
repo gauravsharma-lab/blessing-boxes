@@ -157,6 +157,9 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
+# Legacy settings for compatibility with older library packages (e.g. django-cloudinary-storage)
+DEFAULT_FILE_STORAGE = DEFAULT_STORAGE_BACKEND
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 WHITENOISE_MANIFEST_STRICT = False
 
 
