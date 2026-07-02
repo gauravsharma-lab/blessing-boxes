@@ -55,8 +55,9 @@ CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
 if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
     try:
         idx = INSTALLED_APPS.index('django.contrib.staticfiles')
-        INSTALLED_APPS.insert(idx, 'cloudinary_storage')
-        INSTALLED_APPS.insert(idx + 1, 'cloudinary')
+        # Insert AFTER django.contrib.staticfiles so WhiteNoise handles static files first
+        INSTALLED_APPS.insert(idx + 1, 'cloudinary_storage')
+        INSTALLED_APPS.insert(idx + 2, 'cloudinary')
     except ValueError:
         INSTALLED_APPS.extend(['cloudinary_storage', 'cloudinary'])
     
@@ -159,7 +160,6 @@ STORAGES = {
 }
 # Legacy settings for compatibility with older library packages (e.g. django-cloudinary-storage)
 DEFAULT_FILE_STORAGE = DEFAULT_STORAGE_BACKEND
-STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 WHITENOISE_MANIFEST_STRICT = False
 
 
