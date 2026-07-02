@@ -231,7 +231,7 @@ def donate_food(request):
                 except Exception as e:
                     print(f"Email sending failed (donate_food): {e}")
 
-            messages.success(request, "Donation submitted successfully!")
+            # messages.success(request, "Donation submitted successfully!")
             return redirect('dashboard')
 
         else:
@@ -367,10 +367,10 @@ def edit_donation(request, id):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        form = FoodDonationForm(request.POST, instance=donation)
+        form = FoodDonationForm(request.POST, request.FILES, instance=donation)
         if form.is_valid():
             form.save()
-            messages.success(request, "Donation updated successfully!")
+            # messages.success(request, "Donation updated successfully!")
             return redirect('dashboard')
     else:
         form = FoodDonationForm(instance=donation)
@@ -394,7 +394,7 @@ def delete_donation(request, id):
 
     if request.method == 'POST':
         donation.delete()
-        messages.success(request, "Donation deleted successfully!")
+        # messages.success(request, "Donation deleted successfully!")
         return redirect('dashboard')
 
     return render(request, 'core/delete_confirm.html', {'donation': donation})
